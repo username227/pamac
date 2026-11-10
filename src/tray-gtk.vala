@@ -49,7 +49,23 @@ namespace Pamac {
 	}
 }
 
+// Keep the original X11 backend. On Wayland, prefer Cinnamon's native
+// XApp implementation and fall back to Ayatana when no XApp monitor exists.
+Pamac.TrayIcon create_tray_icon () {
+	if (Environment.get_variable ("XDG_SESSION_TYPE") == "wayland") {
+#if HAVE_XAPP
+		if (XApp.StatusIcon.any_monitors ()) {
+			return new Pamac.XAppTrayIcon ();
+		}
+#endif
+#if HAVE_APPINDICATOR
+		return new Pamac.IndicatorTrayIcon ();
+#endif
+	}
+	return new Pamac.GtkTrayIcon ();
+}
+
 int main (string[] args) {
-	var tray_icon = new Pamac.GtkTrayIcon();
+	var tray_icon = create_tray_icon ();
 	return tray_icon.run (args);
 }

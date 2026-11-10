@@ -50,6 +50,27 @@ namespace Pamac {
 }
 
 int main (string[] args) {
-	var tray_icon = new Pamac.GtkTrayIcon();
+	Pamac.TrayIcon tray_icon;
+	if (Environment.get_variable ("XDG_SESSION_TYPE") == "wayland") {
+#if HAVE_XAPP
+		// Prefer Cinnamon's native status-icon protocol. With only a
+		// secondary menu configured, its primary activation is a signal.
+		if (XApp.StatusIcon.any_monitors ()) {
+			tray_icon = new Pamac.XAppTrayIcon ();
+		} else
+#endif
+#if HAVE_APPINDICATOR
+		{
+			// Keep the working StatusNotifierItem backend as a fallback.
+			tray_icon = new Pamac.IndicatorTrayIcon ();
+		}
+#else
+		{
+			tray_icon = new Pamac.GtkTrayIcon ();
+		}
+#endif
+	} else {
+		tray_icon = new Pamac.GtkTrayIcon ();
+	}
 	return tray_icon.run (args);
 }

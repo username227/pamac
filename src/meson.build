@@ -29,14 +29,32 @@ if use_jemalloc
 endif
 
 tray_deps = [gtk3, libnotify, libpamac]
+tray_sources = ['tray.vala', 'tray-gtk.vala']
+tray_vala_args = common_vala_args
+# AppIndicator implements StatusNotifierItem for native Wayland tray hosts.
+# This remains optional so X11-only Pamac builds keep their existing backend.
+appindicator = dependency('ayatana-appindicator3-0.1', required: false)
+if appindicator.found()
+  tray_deps += [appindicator]
+  tray_sources += ['tray-appindicator.vala']
+  tray_vala_args += ['--define=HAVE_APPINDICATOR']
+endif
+# Cinnamon's native XApp protocol supports separate primary activation and
+# secondary context menus, unlike the generic AppIndicator interface.
+xapp = dependency('xapp', required: false)
+if xapp.found()
+  tray_deps += [xapp]
+  tray_sources += ['tray-xapp.vala']
+  tray_vala_args += ['--define=HAVE_XAPP']
+endif
 tray_link_with = []
 if use_jemalloc
   tray_link_with += jemalloc
 endif
 executable('pamac-tray',
-  sources: ['tray.vala', 'tray-gtk.vala'],
+  sources: tray_sources,
   dependencies: tray_deps,
-  vala_args: common_vala_args,
+  vala_args: tray_vala_args,
   c_args: common_c_args,
   install: true)
 

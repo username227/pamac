@@ -69,7 +69,7 @@ namespace Pamac {
 			}
 		}
 
-		protected void execute_updater () {
+		void execute_updater () {
 			try {
 				Process.spawn_command_line_async ("pamac-manager --updates");
 			} catch (SpawnError e) {

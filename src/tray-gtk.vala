@@ -49,28 +49,23 @@ namespace Pamac {
 	}
 }
 
-int main (string[] args) {
-	Pamac.TrayIcon tray_icon;
+// Keep the original X11 backend. On Wayland, prefer Cinnamon's native
+// XApp implementation and fall back to Ayatana when no XApp monitor exists.
+Pamac.TrayIcon create_tray_icon () {
 	if (Environment.get_variable ("XDG_SESSION_TYPE") == "wayland") {
 #if HAVE_XAPP
-		// Prefer Cinnamon's native status-icon protocol. With only a
-		// secondary menu configured, its primary activation is a signal.
 		if (XApp.StatusIcon.any_monitors ()) {
-			tray_icon = new Pamac.XAppTrayIcon ();
-		} else
+			return new Pamac.XAppTrayIcon ();
+		}
 #endif
 #if HAVE_APPINDICATOR
-		{
-			// Keep the working StatusNotifierItem backend as a fallback.
-			tray_icon = new Pamac.IndicatorTrayIcon ();
-		}
-#else
-		{
-			tray_icon = new Pamac.GtkTrayIcon ();
-		}
+		return new Pamac.IndicatorTrayIcon ();
 #endif
-	} else {
-		tray_icon = new Pamac.GtkTrayIcon ();
 	}
+	return new Pamac.GtkTrayIcon ();
+}
+
+int main (string[] args) {
+	var tray_icon = create_tray_icon ();
 	return tray_icon.run (args);
 }

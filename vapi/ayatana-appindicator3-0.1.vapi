@@ -34,8 +34,5 @@ namespace AppIndicator {
 		[CCode (cname = "app_indicator_set_title")]
 		public void set_title (string title);
 		[CCode (cname = "app_indicator_set_menu")]
-		public void set_menu (Gtk3.Menu menu);
-		[CCode (cname = "app_indicator_set_secondary_activate_target")]
-		public void set_secondary_activate_target (Gtk3.Widget menuitem);
-	}
+		public void set_menu (Gtk3.Menu menu);	}
 }
